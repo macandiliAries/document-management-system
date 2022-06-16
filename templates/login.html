@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block title %}Login{% endblock %}
+{% block body %}
+    <div class="container vh-100">
+        <div class="row justify-content-center align-items-center" style="height: 85vh;">
+            <div class="col-md-5">
+                <div class="p-4">
+                    <h3 class="mb-4 text-center fs-1">
+                        Document Library System
+                    </h3>
+                    <form name="loginForm">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="inputGroup-sizing-default"><i
+                                        class="fa-solid fa-user"></i></span>
+                            </div>
+                            <input type="text" name="username" class="form-control" aria-label="Default"
+                                aria-describedby="inputGroup-sizing-default" placeholder="Username">
+                        </div>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="inputGroup-sizing-default"><i
+                                        class="fa-solid fa-key"></i></span>
+                            </div>
+                            <input type="password" name="password" class="form-control" aria-label="Default"
+                                aria-describedby="inputGroup-sizing-default" placeholder="Password">
+                        </div>
+                        <div class="text-center mt-4">
+                            <button type="button" class="btn btn-dark btn-block action-btn" id="doLogin">
+                                <i class="fa-solid fa-right-to-bracket pr-2"></i>LOG IN</button>
+                        </div>
+                        {% with loadingTitle = 'Logging-in' %}
+                            {% include 'loading-spinner.html' %}
+                        {% endwith %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+    
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/js/login.js?v={{ session.get('timeInMs') }}"></script>
+{% endblock %}

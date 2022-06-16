@@ -1,0 +1,132 @@
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModal" aria-hidden="true"
+    data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit User Details</h5>
+            </div>
+            <form name="editUserForm">
+                <input type="hidden" name="id">
+                <input type="hidden" name="action" value="updateUserDetails">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
+                            </div>
+                            <input type="text" name="full_name" class="form-control" placeholder="Full Name">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa-solid fa-at"></i></span>
+                            </div>
+                            <input type="text" name="email" class="form-control" placeholder="Email Address">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-map-marker"></i></span>
+                            </div>
+                            <input type="text" name="address" class="form-control" placeholder="Address">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa-solid fa-mobile-screen"></i></span>
+                            </div>
+                            <input type="text" name="contact_num" class="form-control" placeholder="Contact Number">
+                        </div>
+                    </div>
+                    {% if session.get('user_type') == 'Super Admin' %}
+                        <div class="form-group">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text" for="inputGroupSelect01"><i
+                                            class="fa fa-rocket"></i></label>
+                                </div>
+                                <select name="user_type" class="custom-select" id="inputGroupSelect01">
+                                    <option selected disabled hidden>User Role</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="Super Admin">Super Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <div class="form-group">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
+                            </div>
+                            <input type="text" name="username" class="form-control" placeholder="Username">
+                        </div>
+                    </div>
+                </div>
+                <div class="action-btn">
+                    <div class="modal-footer d-flex justify-content-center">
+                        <button type="submit" class="btn btn-success">Edit User</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+                {% with loadingTitle = 'Updating user data' %}
+                    {% include 'loading-spinner.html' %}
+                {% endwith %}
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePassModal" tabindex="-1" aria-labelledby="changePassModal" aria-hidden="true"
+    data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changePassModal">Change Password</h5>
+            </div>
+            <form name="changePasswordForm">
+                <input type="hidden" name="id">
+                <input type="hidden" name="action" value="updatePassword">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-key"></i></span>
+                            </div>
+                            <input type="password" class="form-control" name="oldPassword" placeholder="Old Password">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-key"></i></span>
+                            </div>
+                            <input type="password" class="form-control" name="newPassword" placeholder="New Password">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fa fa-key"></i></span>
+                            </div>
+                            <input type="password" class="form-control" name="confirmNewPassword" placeholder="Confirm Password">
+                        </div>
+                    </div>
+                </div>
+                <div class="action-btn">
+                    <div class="modal-footer justify-content-center d-flex">
+                        <button type="submit" class="btn btn-success">Update Password</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+                {% with loadingTitle = 'Changing own password' %}
+                    {% include 'loading-spinner.html' %}
+                {% endwith %}
+            </form>
+        </div>
+    </div>
+</div>

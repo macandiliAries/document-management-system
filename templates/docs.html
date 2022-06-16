@@ -1,0 +1,184 @@
+{% extends "layout.html" %}
+{% block title %}Documents{% endblock %}
+{% block head_links %}
+    {{ super() }}
+    <!-- Summernote CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-bs4.min.css" integrity="sha512-ngQ4IGzHQ3s/Hh8kMyG4FC74wzitukRMIcTOoKT3EyzFZCILOPF0twiXOQn75eDINUfKBYmzYn2AA8DkAk8veQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap4.min.css">
+{% endblock %}
+
+{% block body %}
+    {{ super() }}
+    <div class="m-5 align-items-center justify-content-center adminTable">
+        <div class="d-flex">
+            <div class="p-2">
+                <h3>Documents</h3>
+            </div>
+            <div class="p-2 ml-auto">
+                <button class="btn btn-secondary text-right" id="createDocument">
+                    <i class="fa-solid fa-plus"></i> Create
+                </button>
+            </div>
+        </div>
+
+        <input type="hidden" name="documents" data-value="{{ viewData['documents'] }}">
+        <div class="data table-responsive">
+            <table class="table text-center" id="docsTable">
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="documentModal" tabindex="-1" aria-labelledby="Modal Title" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: none; width: 90%;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form name="documentForm" data-operation="" data-document_id="">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fa-solid fa-file-lines"></i></span>
+                                </div>
+                                <input type="text" class="form-control" placeholder="Title" name="title">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <label class="input-group-text" for="Document Type"><i
+                                            class="fa-solid fa-user"></i></label>
+                                </div>
+                                <select class="custom-select" name="docTypeId">
+                                    <option selected disabled hidden>Document Type</option>
+                                    {% for data in viewData['documentTypes'] %}
+                                        <option value="{{ data['id'] }}">{{ data['docType'] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div id="contents" data-input-type="summernote"></div>
+                        </div>
+                    </div>
+                    <div class="action-btn">
+                        <div class="modal-footer text-center d-flex justify-content-center">
+                            <button type="button" class="btn btn-success" id="submitBtn">Save Document</button>
+                        </div>
+                    </div>
+                    {% with loadingTitle = 'Submitting document' %}
+                        {% include 'loading-spinner.html' %}
+                    {% endwith %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Document Modal -->
+    <div class="modal fade" id="viewDocumentModal" tabindex="-1" aria-labelledby="Modal Title" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: none; width: 90%;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group row">
+                        <label for="title" class="col-sm-2 col-form-label border-right">Document Type</label>
+                        <label for="title" class="col-sm-10 col-form-label" id="documentTitle"></label>
+                    </div>
+                    <div class="form-group row">
+                        <label for="title" class="col-sm-2 col-form-label border-right">Author</label>
+                        <label for="title" class="col-sm-10 col-form-label" id="documentAuthor"></label>
+                    </div>
+                    <div class="form-group row revision-history-div">
+                        <label for="title" class="col-sm-2 col-form-label border-right">Revision History</label>
+                        <div class="col-sm-10">
+                            <button type="button" class="btn btn-info" data-toggle="modal" data-target="#revisionsModal">View Revision History</button>
+                        </div>
+                    </div>
+                    <div class="m-3 pt-3 border-top" id="documentContents"></div>
+                </div>
+                <div class="modal-footer text-center d-flex justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="revisionsModal" tabindex="-1" aria-labelledby="Modal Title" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Revision History</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="container py-2 mt-4 mb-4 revision-list-area">
+                        <div class="revision-list-tpl" hidden>
+                            <div class="row">
+                                <!-- timeline item left dot -->
+                                <div class="col-auto text-center flex-column d-none d-sm-flex">
+                                    <div class="row h-50">
+                                        <div class="col border-right">&nbsp;</div>
+                                        <div class="col">&nbsp;</div>
+                                    </div>
+                                    <h5 class="m-2">
+                                        <span class="badge badge-pill bg-light border">&nbsp;</span>
+                                    </h5>
+                                    <div class="row h-50">
+                                        <div class="col border-right">&nbsp;</div>
+                                        <div class="col">&nbsp;</div>
+                                    </div>
+                                </div>
+                                <!-- timeline item event content -->
+                                <div class="col py-2">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="float-right text-muted" id="dateRevised"></div>
+                                            <h4 class="card-title border-bottom pb-3"><span id="revisionNumber"></span></h4>
+                                            <div class="row">
+                                                <label for="title" class="col-sm-3 col-form-label border-right">Revised by</label>
+                                                <label for="title" class="col-sm-9 col-form-label" id="revisedBy"></label>
+                                            </div>
+                                            <p class="card-text mt-3 pt-3 border-top" id="significantChanges"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <!-- Summernote JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote.min.js" integrity="sha512-6rE6Bx6fCBpRXG/FWpQmvguMWDLWMQjPycXMr35Zx/HRD9nwySZswkkLksgyQcvrpYMx0FELLJVBvWFtubZhDQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap4.min.js"></script>
+
+    <!-- Moment JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.3/moment.min.js"></script>
+
+    <script src="/static/js/common.admin.js?v={{ session.get('timeInMs') }}"></script>
+    <script src="/static/js/docs.js?v={{ session.get('timeInMs') }}"></script>
+{% endblock %}
