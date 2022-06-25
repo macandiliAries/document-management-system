@@ -3,8 +3,12 @@ from os import environ
 from flask_wtf import CSRFProtect
 import scripts.utilities.endpoints as endpoint
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder = 'templates')
+
 app.config['SECRET_KEY'] = environ.get('SECRET_KEY')
+app.config['MAIL_SERVER'] = environ.get('MAIL_SERVER')
+app.config['MAIL_PORT'] = environ.get('MAIL_PORT')
+app.config['MAIL_DEFAULT_SENDER'] = environ.get('MAIL_DEFAULT_SENDER')
 
 # ------------------ #
 # View Endpoints

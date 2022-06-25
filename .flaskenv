@@ -5,6 +5,10 @@
 # This secret key is not only used for session purposes, but also used as salt key when decrypting passwords from the database.
 SECRET_KEY='uj17JpqspOIPr_MAy8sFs2vIyPpPdMHsg_WrKNGx5f8='
 
+MAIL_SERVER='127.0.0.1'
+MAIL_PORT=25
+MAIL_DEFAULT_SENDER='testEmailSender@test.com'
+
 FLASK_RUN_PORT=81
 FLASK_ENV=development
 FLASK_DEBUG=True

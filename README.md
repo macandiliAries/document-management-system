@@ -7,13 +7,13 @@
 - [Getting Started](#getting-started)
 
 ## Overview
-- The system is composed of three modules:
-    - **Login Page**
-        - Contains logic related to user authentication.
+- The system is composed of four modules:
+    - **Login**
+        - Contains the login page which contains the logic related to user authentication.
         - There are two types of user role:
             - Admin
             - Super Admin
-    - **Users Page**
+    - **Users**
         - This is a page where:
             - Admins can:
                 - Update their own personal details.
@@ -25,7 +25,7 @@
                 - Create a new user.
                 - Edit personal details of other users.
                 - Deactivate a user account.
-    - **Documents Page**
+    - **Documents**
         - This is a page where:
             - Admins can:
                 - Search for documents.
@@ -42,6 +42,14 @@
                 - Delete a document.
                 - Approve/reject a submitted document for approval.
                 - Tag an approved document as outdated _(for revision)_.
+    - **E-mailing**
+        - An email will automatically be sent to the Admins if a document is submitted for:
+            - For Review
+            - For Revision Review
+        - An email will automatically be sent to the Users if a document previously submitted is:
+            - Approved
+            - Denied
+            - Tagged for Revision
 
 ## Features
 - Bootstrap
@@ -56,6 +64,7 @@
 - Backend CSRF Protection
 - Password Encryption/Decryption
 - MySQL
+- E-mail Sending
 
 ## Getting Started
 - Clone the repository.
@@ -80,5 +89,6 @@
     - bleach
     - wtforms_json
     - email_validator
+    - flask_mail
 - Import the SQL file stored inside the /sql directory.
 - Start the Flask app via `flask run` command.

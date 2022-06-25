@@ -4,6 +4,7 @@ from scripts.classes.models.DocumentModel import DocumentModel
 from scripts.classes.models.DocumentRevisionModel import DocumentRevisionModel
 from scripts.classes.models.DocumentStatusTypeModel import DocumentStatusTypeModel
 from scripts.classes.services.DocumentValidation import CreateNewValidation, UpdateExistingValidation, SubmitForReviewValidation, ApprovalValidation, RejectionValidation, TagForRevisionValidation, DeleteValidation
+from scripts.classes.services.Mailer import Mailer
 import bleach
 import wtforms_json
 wtforms_json.init() # Initialize WTForms using JSON values.
@@ -118,10 +119,13 @@ class DocumentController(BaseController):
         return getattr(self, '_' + operation)(docId)
 
     def _submitDocumentForReview(self, docId):
+        documentDetails = self.__docModel.getDocumentDetails(docId)
+        newStatusId = self.__docStatusModel.getSubmissionReviewStatus(docId)['statusId']
+        
         # Prepare the query parameters needed for updating the document status.
         queryParams = {
             'set'   : {
-                'statusId' : self.__docStatusModel.getSubmissionReviewStatus(docId)['statusId']
+                'statusId' : newStatusId
             },
             'where' : {
                 'id' : docId
@@ -138,11 +142,21 @@ class DocumentController(BaseController):
                 'revisionNumber'     : self.__generateNewRevisionVersion(self.__docRevisionsModel.getDocumentRevisions(docId)),
                 'dateRevised'        : datetime.today().strftime('%Y-%m-%d %H:%M:%S'),
                 'significantChanges' : bleach.clean(self._inputs['significantChanges']),
-                'reviserId'          : self.__docModel.getDocumentDetails(docId)['lastEditorId']
+                'reviserId'          : documentDetails['lastEditorId']
             }
 
             # Insert revision history.
             self.__docRevisionsModel.insertDocumentRevision(tuple(queryParams.keys()), tuple(queryParams.values()))
+
+        statusIds = {
+            2 : 'For Review',
+            5 : 'For Revision Review'
+        }
+
+        self.__sendEmail(statusIds[newStatusId], {
+            'executor_name'  : self._auth.get('full_name'),
+            'document_title' : documentDetails['title']
+        })
 
         return jsonify({
             'result'  : True,
@@ -151,8 +165,10 @@ class DocumentController(BaseController):
         })
 
     def _approveDocument(self, docId):
+        documentDetails = self.__docModel.getDocumentDetails(docId)
+
         # Approve the revision if document to be approved has been previously tagged as "For Revision Review".
-        if self.__docModel.getDocumentDetails(docId)['status'] == 'For Revision Review':
+        if documentDetails['status'] == 'For Revision Review':
             queryParams = {
                 'set'   : {
                     'isApproved' : 1
@@ -178,6 +194,11 @@ class DocumentController(BaseController):
         # Update the document status.
         self.__docModel.updateExistingDocument(queryParams)
 
+        self.__sendEmail('Approved', {
+            'executor_name'  : self._auth.get('full_name'),
+            'document_title' : documentDetails['title']
+        })
+
         return jsonify({
             'result'  : True,
             'title'   : 'Document Approval Success',
@@ -185,8 +206,10 @@ class DocumentController(BaseController):
         })
 
     def _denyDocument(self, docId):
+        documentDetails = self.__docModel.getDocumentDetails(docId)
+
         # Delete the supposed revision changes if document to be denied has been previously tagged as "For Revision Review".
-        if self.__docModel.getDocumentDetails(docId)['status'] == 'For Revision Review':
+        if documentDetails['status'] == 'For Revision Review':
             lastRevisionId = self.__docRevisionsModel.getDocumentRevisions(docId)[0]['revisionId']
             self.__docRevisionsModel.deleteDocumentRevision(lastRevisionId)
   
@@ -202,6 +225,11 @@ class DocumentController(BaseController):
 
         # Update the document status.
         self.__docModel.updateExistingDocument(queryParams)
+
+        self.__sendEmail('Denied', {
+            'executor_name'  : self._auth.get('full_name'),
+            'document_title' : documentDetails['title']
+        })
 
         return jsonify({
             'result'  : True,
@@ -222,6 +250,11 @@ class DocumentController(BaseController):
 
         # Update the document status.
         self.__docModel.updateExistingDocument(queryParams)
+
+        self.__sendEmail('For Revision', {
+            'executor_name'  : self._auth.get('full_name'),
+            'document_title' : self.__docModel.getDocumentDetails(docId)['title']
+        })
 
         return jsonify({
             'result'  : True,
@@ -269,3 +302,9 @@ class DocumentController(BaseController):
             lastRevisionMinorVersion = 0 
 
         return "v{}.{}".format(lastRevisionMajorVersion, lastRevisionMinorVersion)
+
+    def __sendEmail(self, templateType, params):
+        mailer = Mailer()
+        mailer.setTemplate(templateType)
+        mailer.setParams(params)
+        mailer.sendMail()
