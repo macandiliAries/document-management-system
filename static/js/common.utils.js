@@ -66,14 +66,14 @@ const executeRequest = async (properties) => {
             csrfInput.val(returnData.new_token);
         }
     } catch (error) {
-        displayAlert(false, 'Invalid Request', 'Connection to the server has been lost. Page will now refresh.', () => { location.reload(); });
+        await displayAlert(false, 'Invalid Request', 'Connection to the server has been lost. Page will now refresh.', () => { location.reload(); });
     }
 
     return returnData;
 };
 
-const displayAlert = (result, alertTitle, alertMessage, callback = () => {}) => {
-    Swal.fire({
+const displayAlert = async (result, alertTitle, alertMessage, callback = () => {}) => {
+    const swalAlert = Swal.fire({
         icon              : (result === false) ? 'error' : 'success',
         title             : alertTitle,
         text              : alertMessage,
@@ -86,6 +86,8 @@ const displayAlert = (result, alertTitle, alertMessage, callback = () => {}) => 
             callback();
         }
     });
+
+    return swalAlert;
 };
 
 const displayConfirm = (alertTitle, alertMessage, confirmFunction = () => {}, otherProps = {}) => {
